@@ -11,6 +11,7 @@ import { Message, Session } from '@/lib/types'
 import { usePathname, useRouter } from 'next/navigation'
 import { useScrollAnchor } from '@/lib/hooks/use-scroll-anchor'
 import { toast } from 'sonner'
+import LoginForm from './login-form'
 
 export interface ChatProps extends React.ComponentProps<'div'> {
   initialMessages?: Message[]
@@ -25,14 +26,18 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
   const [input, setInput] = useState('')
   const [messages] = useUIState()
   const [aiState] = useAIState()
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
 
   const [_, setNewChatId] = useLocalStorage('newChatId', id)
 
   useEffect(() => {
     if (session?.user) {
+      setIsLoggedIn(true)
       if (!path.includes('chat') && messages.length === 1) {
         window.history.replaceState({}, '', `/chat/${id}`)
       }
+    } else {
+      setIsLoggedIn(false)
     }
   }, [id, path, session?.user, messages])
 
@@ -55,6 +60,13 @@ export function Chat({ id, className, session, missingKeys }: ChatProps) {
 
   const { messagesRef, scrollRef, visibilityRef, isAtBottom, scrollToBottom } =
     useScrollAnchor()
+
+  if (!isLoggedIn)
+    return (
+      <main className="flex flex-col p-4 justify-center items-center w-full">
+        <LoginForm />
+      </main>
+    )
 
   return (
     <div
